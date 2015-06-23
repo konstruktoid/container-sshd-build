@@ -1,23 +1,15 @@
 # Force autobuild 1434927059
 
-FROM konstruktoid/debian:wheezy
+FROM alpine:3.1
+
+RUN apk update && \
+    apk upgrade && \
+    apk add --update acf-openssh
 
 COPY files/sshd_config /etc/ssh/sshd_config
 
-RUN apt-get update && \
-    apt-get -y upgrade && \
-    apt-get -y install openssh-server --no-install-recommends && \
-    apt-get -y clean && \
-    apt-get -y autoremove && \
-    rm -rf /var/lib/apt/lists/* \
-      /usr/share/doc /usr/share/doc-base \
-      /usr/share/man /usr/share/locale /usr/share/zoneinfo && \
-    mkdir /var/run/sshd
-
-ADD https://raw.githubusercontent.com/konstruktoid/Docker/master/Security/cleanBits.sh /tmp/cleanBits.sh
-
-RUN /bin/bash /tmp/cleanBits.sh && \
-    rm /tmp/cleanBits.sh
+RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa && \
+    ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -N '' -t ecdsa
 
 ENTRYPOINT ["/usr/sbin/sshd"]
 CMD ["-D"]
